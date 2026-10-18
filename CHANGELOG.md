@@ -48,6 +48,8 @@ in [ROADMAP.md](ROADMAP.md).
 
 ### Fixed
 
+- Twitch's chat is open again when the floating video comes back to its tab, as it was when the video went out. In its Studio mode, Twitch folds the chat away in a page as small as the little window and never opens it again by itself, so coming back by the window's button or by the tab left the video alone with the chat shut
+- The floating video fills its window when the player draws its picture between black bars, as Twitch's does in Studio mode: the bars took up the little window, and the picture only part of it. The picture is now as large as the window allows, whatever is around it
 - A video file opened as a page plays, as in Safari, instead of ending on "The page didn't load". A download site's link to an .mp4 opened the video in a new tab, and the error page covered it while it loaded. A file the site sends as a download still downloads, and a video that can't be reached still says so
 - An extension that signs in again quietly, as Claude in Chrome does each time the browser starts, does it out of sight as in Chrome, instead of opening its sign-in page in a tab in front. Claude in Chrome then gets its sign-in back without a tab, and the Claude app can reach it again when Search is signed in to claude.ai
 - A link that opens in a new tab works again inside a part of a page drawn in a sandbox, as some AI chats draw their answers. Since the change for asynchronous sign-ins, a click there counted for nothing and the link did nothing; the click now counts for that part of the page and nothing else, so an advertisement in a sandbox still can't open a window from it
