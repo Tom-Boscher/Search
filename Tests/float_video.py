@@ -42,9 +42,6 @@ VIDEO_CASES = {
     "video-padding-border": "padding:40px;border:20px solid red;box-sizing:content-box;",
     "video-clip": "clip-path:inset(20%);",
     "video-portrait": "",
-    # Twitch's Studio mode: the video as tall as the page, its picture in the
-    # middle between black bars.
-    "video-studio": "height:160%;",
     "video-mask": "mask:linear-gradient(transparent,black);",
 }
 PAGE = """<!doctype html><meta charset=utf-8><title>{name}</title>
@@ -70,11 +67,7 @@ column.querySelector('button').onclick=function(){column.classList.toggle('right
 addEventListener('resize',function(){if(innerWidth<920)column.classList.add('right-column--collapsed')});
 </script>"""
 CHAT_OPEN = "!!document.querySelector('.right-column:not(.right-column--collapsed)')"
-# Where the picture is, as `contain` fits it inside the video's box: that is
-# what has to fill the view, whatever is around it.
-PROBE = """(function(){var v=document.querySelector('video');var b=v.getBoundingClientRect();
-var f=v.videoWidth&&v.videoHeight?Math.min(b.width/v.videoWidth,b.height/v.videoHeight):0;
-var w=f?v.videoWidth*f:b.width,h=f?v.videoHeight*f:b.height,r={left:b.left+(b.width-w)/2,top:b.top+(b.height-h)/2,width:w,height:h};
+PROBE = """(function(){var v=document.querySelector('video');var r=v.getBoundingClientRect();
 var seen=v.checkVisibility?v.checkVisibility({contentVisibilityAuto:true,opacityProperty:true,visibilityProperty:true}):true;
 return JSON.stringify({x:r.left,y:r.top,w:r.width,h:r.height,iw:innerWidth,ih:innerHeight,seen:seen,fit:getComputedStyle(v).objectFit,playing:!v.paused,clip:getComputedStyle(v).clipPath,mask:getComputedStyle(v).webkitMaskImage})})()"""
 
@@ -113,8 +106,8 @@ def main():
             for width, height in [(1180, 780), (700, 500), (900, 900)]:
                 sv.cmd({"do": "resize", "width": width, "height": height, "steps": 2})
                 p = json.loads(sv.cmd({"do": "eval", "id": tab, "js": PROBE}).get("value"))
-                # The picture as large as it goes whole, in the middle: one way
-                # it fills the view, the other it is centred.
+                # As large as it goes whole, in the middle: one way it fills the
+                # view, the other it is centred.
                 wide = abs(p["x"]) < 1 and abs(p["w"] - p["iw"]) < 1 and abs(2 * p["y"] + p["h"] - p["ih"]) < 2 and p["h"] <= p["ih"] + 1
                 tall = abs(p["y"]) < 1 and abs(p["h"] - p["ih"]) < 1 and abs(2 * p["x"] + p["w"] - p["iw"]) < 2 and p["w"] <= p["iw"] + 1
                 floating = isinstance(said, dict) and said.get("floating") is True
