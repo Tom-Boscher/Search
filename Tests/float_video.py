@@ -57,6 +57,10 @@ setInterval(function(){{g.fillStyle='hsl('+(n++*7%360)+',70%,50%)';g.fillRect(0,
 var v=document.querySelector('video'); v.srcObject=c.captureStream(25); v.play();
 window.scrollTo(0,500);
 </script>"""
+PROBE = """(function(){var v=document.querySelector('video');var r=v.getBoundingClientRect();
+var seen=v.checkVisibility?v.checkVisibility({contentVisibilityAuto:true,opacityProperty:true,visibilityProperty:true}):true;
+return JSON.stringify({x:r.left,y:r.top,w:r.width,h:r.height,iw:innerWidth,ih:innerHeight,seen:seen,fit:getComputedStyle(v).objectFit,playing:!v.paused,clip:getComputedStyle(v).clipPath,mask:getComputedStyle(v).webkitMaskImage})})()"""
+
 # Twitch's chat column, as far as the floating video sees it: Studio mode
 # folds it away in a narrow page and never opens it again by itself.
 CHAT = """<div class="right-column"><div class="right-column__toggle-visibility">
@@ -67,9 +71,6 @@ column.querySelector('button').onclick=function(){column.classList.toggle('right
 addEventListener('resize',function(){if(innerWidth<920)column.classList.add('right-column--collapsed')});
 </script>"""
 CHAT_OPEN = "!!document.querySelector('.right-column:not(.right-column--collapsed)')"
-PROBE = """(function(){var v=document.querySelector('video');var r=v.getBoundingClientRect();
-var seen=v.checkVisibility?v.checkVisibility({contentVisibilityAuto:true,opacityProperty:true,visibilityProperty:true}):true;
-return JSON.stringify({x:r.left,y:r.top,w:r.width,h:r.height,iw:innerWidth,ih:innerHeight,seen:seen,fit:getComputedStyle(v).objectFit,playing:!v.paused,clip:getComputedStyle(v).clipPath,mask:getComputedStyle(v).webkitMaskImage})})()"""
 
 
 def main():
