@@ -84,11 +84,18 @@ struct SideBar: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 10)
-            // Clear of the foot, which sits over the column's bottom edge.
-            .padding(.bottom, SideBar.footHeight)
+            // Clear of the foot, which sits over the column's bottom edge,
+            // and of what plays in another tab, over the foot.
+            .padding(.bottom, SideBar.footHeight + (browser.player == nil ? 0 : rowHeight + SideBar.playerGap))
 
-            VStack {
+            VStack(spacing: 0) {
                 Spacer()
+                if let tab = browser.player {
+                    PlayerRow(browser: browser, prefs: prefs, tab: tab)
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, SideBar.playerGap)
+                        .transition(.opacity)
+                }
                 foot
             }
         }
@@ -114,6 +121,7 @@ struct SideBar: View {
             browser.take(providers)
         }
         .animation(Motion.quick, value: landing)
+        .animation(Motion.quick, value: browser.player?.id)
         .animation(Motion.glide, value: browser.activeID)
         .animation(Motion.glide, value: browser.editingTab)
         .animation(Motion.settle, value: browser.tabs.map(\.id))
@@ -524,6 +532,8 @@ struct SideBar: View {
 
     /// The foot's door and its margin beneath.
     private static let footHeight: CGFloat = 26 + 10
+    /// Between what plays in another tab and the foot's doors.
+    private static let playerGap: CGFloat = 4
 
     private var newTab: some View {
         Quiet(icon: "plus", title: "New tab", height: rowHeight, size: prefs.sideTitle) { browser.launch() }
