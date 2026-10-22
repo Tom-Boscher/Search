@@ -138,6 +138,12 @@ final class Preferences: ObservableObject {
     @Published var roomyTabs: Bool {
         didSet { store.set(roomyTabs, forKey: "sidebar.roomy") }
     }
+    /// A tab playing sound out of sight shows at the foot of the column,
+    /// with its pause, as Arc's sidebar has it (see Player.swift). Off
+    /// unless asked for.
+    @Published var showsPlayer: Bool {
+        didSet { store.set(showsPlayer, forKey: "sidebar.player") }
+    }
     /// One tab's line in the column, and the size its title is set in.
     var sideRow: CGFloat { roomyTabs ? 36 : 28 }
     var sideTitle: CGFloat { roomyTabs ? 14 : 12.5 }
@@ -527,6 +533,7 @@ final class Preferences: ObservableObject {
         sidePosition = store.string(forKey: "sidebar.position").flatMap(SidebarPosition.init) ?? .left
         sideHides = store.bool(forKey: "sidebar.hides")
         roomyTabs = store.bool(forKey: "sidebar.roomy")
+        showsPlayer = store.bool(forKey: "sidebar.player")
         let width = store.object(forKey: "sidebar.width") as? Double ?? Double(Metrics.side)
         sideWidth = min(Metrics.sideMax, max(Metrics.sideMin, CGFloat(width)))
         cards = store.object(forKey: "layout.cards") as? Bool ?? true

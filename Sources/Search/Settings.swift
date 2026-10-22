@@ -453,6 +453,10 @@ struct SettingsPanel: View {
                         set: { on in withAnimation(Motion.glide) { prefs.roomyTabs = on } }
                     ))
                 }
+                Rule()
+                Line("What's playing in other tabs", "As in Arc: a tab playing sound while you're on another one shows at the foot of the sidebar, to pause it, play it again or go to it.") {
+                    Switch(on: $prefs.showsPlayer)
+                }
             }
             Rule()
             Line("Tabs show", "Beside the title, and on a pinned square") {
