@@ -43,6 +43,31 @@ def main():
              len(new) == 1 and r["active"] == new[0], r)
         t.ok("b is untouched", b in r["tabs"], r["tabs"])
     finally:
+        sv.finish()
+    try:
+        # With Split View on, the menu has Open Link in Split View.
+        sv.setup(splitView=True); sv.launch()
+        a = sv.page("a"); b = sv.page("b")
+        sv.sp("select", id=a); time.sleep(0.4)
+        menu(a, ("Open Link in Split View", "beside")); time.sleep(0.5)
+        st = sv.sp("state")
+        new = [x["id"] for x in st["tabs"] if x["url"].endswith("/beside")]
+        t.ok("Open Link in Split View: a new tab for the link", len(new) == 1, st["tabs"])
+        t.ok("…in a pair with the page it came from, on its right",
+             bool(new) and any(s["tabs"] == [a, new[0]] for s in st["splits"]), st["splits"])
+        t.ok("…and the link's page has the keys", bool(new) and st["activeID"] == new[0], st["activeID"])
+        # The ⌥ item still follows Open Link in New Tab, as an alternate must.
+        sv.sp("select", id=b); time.sleep(0.4)
+        r = menu(b, ("Open Link in New Tab and Go to It", "front"))
+        front = [x for x, u in zip(r["tabs"], r["urls"]) if u.endswith("/front")]
+        t.ok("Split View on: Open Link in New Tab and Go to It still goes to it",
+             len(front) == 1 and r["active"] == front[0], r)
+        # Off, the item isn't there: picking it chooses nothing.
+        sv.sp("enabled", on=False); time.sleep(0.3)
+        r = menu(b, ("Open Link in Split View", "nowhere"))
+        t.ok("Split View off: no Open Link in Split View",
+             not any(u.endswith("/nowhere") for u in r["urls"]), r["urls"])
+    finally:
         t.done(); sv.finish()
     sys.exit(1 if t.failed else 0)
 
