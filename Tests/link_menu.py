@@ -49,8 +49,15 @@ def site(t, name, url, selector):
     if not found:
         print(f"  skip  {name}: no link found (didn't load?)"); return
     time.sleep(0.8)
+    # A page can keep the right button for itself: no menu comes up, in
+    # Search as in Safari, and there is nothing to choose.
+    sv.ev(tab, """(function () { window.__menuKept = false;
+      window.addEventListener('contextmenu', function (e) {
+        setTimeout(function () { window.__menuKept = e.defaultPrevented; }, 0); }, true); return 1 })()""")
     before = {x["id"] for x in sv.sp("state")["tabs"]}
     sv.cmd({"do": "linkmenu", "id": tab, "x": found[0], "y": found[1], "pick": "Open Link in Split View"}); time.sleep(2)
+    if sv.ev(tab, "window.__menuKept") is True:
+        print(f"  skip  {name}: the page keeps its right-click menu for itself"); return
     st = sv.sp("state")
     new = [x["id"] for x in st["tabs"] if x["id"] not in before]
     t.ok(f"{name}: one new tab for {found[2]}", len(new) == 1, new)
@@ -116,8 +123,10 @@ def main():
         t.ok("from a pin: the link in a pair, beside a page that isn't the pin",
              pair is not None and p not in pair["tabs"], st["splits"])
         # Sites as they are.
-        site(t, "Wikipedia", "https://en.wikipedia.org/wiki/WebKit", '#mw-content-text p a[href^="/wiki/"]')
-        site(t, "Twitch", "https://www.twitch.tv/directory/all", 'a[data-a-target="preview-card-image-link"]')
+        site(t, "Wikipedia", "https://en.wikipedia.org/wiki/WebKit", '#mw-content-text p a[href^="/wiki/"], #mw-content-text p a[href^="https://en.wikipedia.org/wiki/"]')
+        # A card's channel name: its picture keeps the right button for
+        # Twitch's own menu.
+        site(t, "Twitch", "https://www.twitch.tv/directory/all", 'a[data-a-target="preview-card-channel-link"]')
         # Off, the item isn't there: picking it chooses nothing.
         sv.sp("enabled", on=False); time.sleep(0.3)
         r = menu(b, ("Open Link in Split View", "nowhere"))
