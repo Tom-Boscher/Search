@@ -25,6 +25,9 @@ enum Session {
         var letGo: Date? = nil
         /// A pin kept as a row (see Tab.listed). Nil for a square.
         var listed: Bool? = nil
+        /// Silenced by hand from the tab's speaker or menu. False in sessions
+        /// written before tabs could keep it.
+        var muted: Bool = false
     }
 
     struct Shape: Codable {
@@ -54,18 +57,45 @@ enum Session {
     }
 
     /// Settings › General › Start with a fresh window, at launch, before any
-    /// window reads its row: each space's file keeps its pins — their
-    /// letters, names, homes, whole — and nothing else. Groups and Split
-    /// View pairs go with the tabs they held (a pin is in neither). No tab
-    /// is marked as in front, so the window opens on an empty tab beside
-    /// the pins (see Browser.restoreSession).
+    /// window reads its row: each space's file keeps what you said to keep,
+    /// as tabs that close themselves count it (see Closing.swift) — its
+    /// pins, their letters, names, homes, whole; the tabs in its groups,
+    /// with the groups (Arc's folders come in as groups, and a folder is
+    /// never last time's leftovers); and a tab you named — and nothing else.
+    /// A Split View pair stays only when both its pages do. No tab is marked
+    /// as in front, so the window opens on an empty tab beside the pins (see
+    /// Browser.restoreSession).
     static func startFresh(spaces: [UUID]) {
         for space in spaces {
             let shape = read(space: space)
-            let pins = shape.tabs.filter { $0.pin != nil }
-            guard pins.count != shape.tabs.count || shape.active >= 0 else { continue }
-            write(now: true, space: space, Shape(tabs: pins, active: -1, groups: nil, splits: []))
+            let left = fresh(shape)
+            guard left.tabs.count != shape.tabs.count || shape.active >= 0 else { continue }
+            write(now: true, space: space, left)
         }
+    }
+
+    /// A row as a fresh start leaves it (see startFresh).
+    static func fresh(_ shape: Shape) -> Shape {
+        let groups = shape.groups ?? []
+        let grouped = Set(groups.map(\.id))
+        var places: [Int: Int] = [:]
+        var tabs: [Entry] = []
+        for (index, entry) in shape.tabs.enumerated() {
+            let kept = entry.pin != nil || entry.name != nil || entry.groupID.map(grouped.contains) == true
+            guard kept else { continue }
+            places[index] = tabs.count
+            tabs.append(entry)
+        }
+        let keptGroups = groups.filter { group in tabs.contains { $0.groupID == group.id } }
+        let splits = shape.splits.compactMap { pair -> Split? in
+            let moved = pair.tabs.compactMap { places[$0] }
+            guard moved.count == pair.tabs.count else { return nil }
+            var kept = pair
+            kept.tabs = moved
+            kept.focused = pair.focused.flatMap { places[$0] }
+            return kept
+        }
+        return Shape(tabs: tabs, active: -1, groups: keptGroups.isEmpty ? nil : keptGroups, splits: splits)
     }
 
     static func erase(space: UUID) {
@@ -103,7 +133,7 @@ enum Session {
 // key it isn't asked for. In extensions, so the memberwise initialisers stay.
 
 extension Session.Entry {
-    private enum Keys: String, CodingKey { case url, title, pin, name, home, groupID, pinID, touched, letGo, listed }
+    private enum Keys: String, CodingKey { case url, title, pin, name, home, groupID, pinID, touched, letGo, listed, muted }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: Keys.self)
@@ -117,6 +147,7 @@ extension Session.Entry {
         touched = try? c.decodeIfPresent(Date.self, forKey: .touched)
         letGo = try? c.decodeIfPresent(Date.self, forKey: .letGo)
         listed = try? c.decodeIfPresent(Bool.self, forKey: .listed)
+        muted = (try? c.decodeIfPresent(Bool.self, forKey: .muted)) ?? false
     }
 }
 
