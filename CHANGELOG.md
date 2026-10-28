@@ -13,7 +13,7 @@ in [ROADMAP.md](ROADMAP.md).
 
 ### Added
 
-- What plays in another tab shows at the foot of the sidebar: the tab's icon and title, with its pause, and a click on it goes to the tab. Paused from there, it stays with its play, and a cross puts it away until the tab plays again. For the newest tab to make a sound that is out of sight, not the page on screen, the other page of a pair on screen or a video out in the floating window. Off unless you turn it on in Settings › Appearance › Tabs › What's playing in other tabs, with titles in the sidebar ([#764](https://github.com/driceroland/Search/pull/764))
+- What plays in another tab shows at the foot of the sidebar: the tab's icon and title, with its pause, and a click on it goes to the tab. Paused from there, it stays with its play, and a cross puts it away until the tab plays again. For the newest tab to make a sound that is out of sight, not the page on screen, the other page of a pair on screen or a video out in the floating window. Off unless you turn it on in Settings › Appearance › Tabs › What's playing in other tabs, with titles in the sidebar. Thanks [@Tom-Boscher](https://github.com/Tom-Boscher) ([#764](https://github.com/driceroland/Search/pull/764))
 
 ### Held back
 
